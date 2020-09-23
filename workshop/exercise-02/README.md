@@ -10,7 +10,7 @@ The service that will be created is an easier implementation of the 'Web-API' se
 
 Let's start by creating a new Quarkus project with a synchronous REST endpoint. Invoke the following command the Cloud Shell.
 
-```
+```sh
 cd ~/cloud-native-starter/reactive
 mvn io.quarkus:quarkus-maven-plugin:1.7.0.Final:create \
     -DprojectGroupId=org.acme \
@@ -26,14 +26,14 @@ To better understand which files have been created, run the same command locally
 
 In order to test the synchronous endpoint which has been created with the command above, run these commands in one terminal in the Cloud Shell.
 
-```
+```sh
 cd ~/cloud-native-starter/reactive/rest-json-quickstart
 ./mvnw compile quarkus:dev
 ```
 
 Open a second terminal in the Cloud Shell and invoke the following command.
 
-```
+```sh
 curl http://localhost:8080/fruits
 ```
 
@@ -43,7 +43,7 @@ You should see the following response.
 
 The implementation of the synchronous endpoint is in the class [FruitResource.java](https://github.com/nheidloff/workshop-quarkus-openshift-reactive-endpoints/blob/master/finish/rest-json-quickstart/src/main/java/org/acme/rest/json/FruitResource.java). The annotations @Path, @Get and @Produces are used to define the endpoint via [JAX-RS](https://en.wikipedia.org/wiki/Java_API_for_RESTful_Web_Services). To learn more about synchronous endpoints, check out the [Quarkus guide](https://quarkus.io/guides/rest-json).
 
-```
+```sh
 cd ~/cloud-native-starter/reactive/rest-json-quickstart/src/main/java/org/acme/rest/json/
 cat FruitResource.java 
 ```
@@ -52,18 +52,18 @@ cat FruitResource.java
 
 ### Step 3: Create Classes Article and ArticleResource
 
-Next let's create a reactive endpoint. We need a new class 'ArticleResource.java' and a class 'Article.java'.
+Next let's create a reactive endpoint. We need a new class `'ArticleResource.java'` and a class `'Article.java'`.
 
-```
+```sh
 cd ~/cloud-native-starter/reactive/rest-json-quickstart/src/main/java/org/acme/rest/json/
 touch Article.java 
 touch ArticleResource.java 
 nano Article.java
 ```
 
-Add the following code to 'Article.java'.
+Add the following code to `'Article.java'`.
 
-```
+```java
 package org.acme.rest.json;
 
 public class Article {
@@ -81,12 +81,12 @@ Exit the Editor via 'Ctrl-X', 'y' and 'Enter'.
 
 Modify the ArticleResource class via nano and add the following skeleton. The complete source is in the [GitHub repo](https://github.com/nheidloff/workshop-quarkus-openshift-reactive-endpoints/blob/master/finish/rest-json-quickstart/src/main/java/org/acme/rest/json/ArticleResource.java).
 
-```
+```sh
 cd ~/cloud-native-starter/reactive/rest-json-quickstart/src/main/java/org/acme/rest/json/
 nano ArticleResource.java
 ```
 
-```
+```java
 package org.acme.rest.json;
 
 import javax.ws.rs.GET;
@@ -180,9 +180,9 @@ You should see the following response.
 
 Now the big question is: How does the reactive endpoint work??? Let's go through the code line by line.
 
-Reactive endpoints use the same JAX-RS annotations '@Path', '@Get' and '@Produces' as synchronous endpoints.
+Reactive endpoints use the same JAX-RS annotations `'@Path'`, `'@Get'` and `'@Produces'` as synchronous endpoints.
 
-```
+```java
 @Path("/articles")
 public class ArticleResource {
     
@@ -193,13 +193,13 @@ public class ArticleResource {
 
 The key difference is the return type. Rather than returning a [Response](https://docs.oracle.com/javaee/7/api/javax/ws/rs/core/Response.html) object, a [CompletionStage](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html) with a Response object is returned.
 
-The CompletionStage is returned immediately, so that the thread is not blocked. Only when it's completed, a callback is invoked which contains the actual response.
+The `CompletionStage` is returned immediately, so that the thread is not blocked. Only when it's completed, a `callback` is invoked which contains the actual response.
 
-To demonstrate this behavior better, a [CompletableFuture](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html) instance is created and returned. CompletableFuture is an implementation of the CompletionStage instance. Once the asynchronous code has been completed, a method 'complete' is invoked on the CompletableFuture object.
+To demonstrate this behavior better, a `[CompletableFuture](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html)` instance is created and returned. `CompletableFuture` is an implementation of the `CompletionStage` instance. Once the asynchronous code has been completed, a method `'complete'` is invoked on the `CompletableFuture` object.
 
-The static method 'CompletableFuture.supplyAsync()' returns a list of sample articles asynchronously for demo purposes. In this case only one sample article is returned.
+The static method 'CompletableFuture.supplyAsync()'` returns a list of sample articles asynchronously for demo purposes. In this case only one sample article is returned.
 
-```
+```java
 public CompletionStage<Response> getArticles() {
         
         CompletableFuture<Response> future = new CompletableFuture<Response>();        
@@ -216,15 +216,15 @@ public CompletionStage<Response> getArticles() {
     }
 ```
 
-The CompletionStage interface has several methods. Most of them return CompletionStages again. This allows chaining method invocations as done in the sample code. As input parameters functions are passed in via [Java Lambda](https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/Lambda-QuickStart/index.html).
+The `CompletionStage` interface has several methods. Most of them return CompletionStages again. This allows chaining method invocations as done in the sample code. As input parameters functions are passed in via `[Java Lambda](https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/Lambda-QuickStart/index.html)`.
 
-The method 'whenComplete' is triggered after the asynchronous methods have been completed. 
+The method `'whenComplete'` is triggered after the asynchronous methods have been completed. 
 
-Another method of CompletionStage is 'thenApply'. This method is invoked after the previous asynchronous methods have been completed. The method can be used, for example, to convert data. In the sample code the list of articles is converted in two steps. First the list of article is converted into a JSON array and then the array is converted into a Response object.
+Another method of CompletionStage is `'thenApply'`. This method is invoked after the previous asynchronous methods have been completed. The method can be used, for example, to convert data. In the sample code the list of articles is converted in two steps. First the list of article is converted into a JSON array and then the array is converted into a Response object.
 
-The methods 'stream' and 'map' are only used for the conversion and not related to reactive programming.
+The methods `'stream'` and `'map'` are only used for the conversion and not related to reactive programming.
 
-```
+```java
 public CompletionStage<Response> getArticles() {
         
         CompletableFuture<Response> future = new CompletableFuture<Response>();        
@@ -251,11 +251,11 @@ public CompletionStage<Response> getArticles() {
 
 In the same way exceptions and errors can occur for synchronous code, they can happen for asychronous code as well.
 
-However the way to handle them is quite different. When invoking asynchronous methods exceptions cannot be handled via 'catch' as usual. Instead the method 'exceptionally' of the interface CompletionStage is used.
+However the way to handle them is quite different. When invoking asynchronous methods exceptions cannot be handled via `'catch'` as usual. Instead the method `'exceptionally'` of the interface `CompletionStage` is used.
 
 The code below should give you an idea how to handle exceptions. To find out more, read the blog [Chained asynchronous Invocations and Error Handling](http://heidloff.net/article/developing-reactive-rest-apis-with-quarkus/).
 
-If you want to try out 'exceptionally' uncomment the line where the InvalidInputParameter exception is thrown.
+If you want to try out `'exceptionally'` uncomment the line where the InvalidInputParameter exception is thrown.
 
 ```
     @GET
